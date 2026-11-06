@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101927">
+<title>英雄联盟·召唤师人格鉴定</title>
+<style>
+:root{
+  --bg:#0b1421;--panel:rgba(13,24,39,.94);--panel2:rgba(19,31,47,.94);
+  --gold:#e5b875;--gold2:#f4d5a0;--cyan:#48ded8;--cyan2:#9af4ed;
+  --muted:#aab3c4;--line:rgba(226,181,117,.48);--white:#f1eee9;
+}
+*{box-sizing:border-box}
+html{min-height:100%;background:var(--bg)}
+body{
+  margin:0;min-height:100vh;color:var(--white);
+  font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif;
+  background:
+    radial-gradient(ellipse at 78% 8%,rgba(78,101,145,.27),transparent 34%),
+    radial-gradient(ellipse at 12% 65%,rgba(32,120,126,.13),transparent 35%),
+    linear-gradient(145deg,#0b1421 0%,#172438 48%,#0a1320 100%);
+}
+button{font:inherit}
+.app{width:min(100%,760px);margin:0 auto;padding:16px 13px 28px}
+.topline{display:flex;justify-content:space-between;align-items:center;color:#8994a9;font-size:11px;letter-spacing:2px;padding:5px 4px 14px}
+.brand{color:var(--gold);font-weight:800;letter-spacing:3px}
+.screen{display:none;animation:fade .35s ease}
+.screen.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.panel{
+  position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(19,32,49,.97),rgba(9,19,32,.97));
+  border:1px solid rgba(224,177,111,.65);border-radius:15px;
+  box-shadow:0 12px 35px rgba(0,0,0,.28),inset 0 0 28px rgba(84,150,171,.06);
+}
+.panel:before{content:"";position:absolute;inset:6px;border:1px solid rgba(112,160,175,.16);border-radius:10px;pointer-events:none}
+.panel-inner{position:relative;z-index:1;padding:22px}
+.kicker{color:var(--cyan);font-size:11px;letter-spacing:3px;font-weight:700}
+h1,h2,h3,p{margin-top:0}
+.gold{color:var(--gold2)}
+.intro{text-align:center;padding:36px 22px 30px}
+.intro .crest{font-size:54px;color:var(--gold);text-shadow:0 0 24px rgba(229,184,117,.3);margin:18px 0}
+.intro h1{font-size:clamp(27px,7vw,43px);letter-spacing:3px;margin:8px 0 12px;color:var(--gold2)}
+.intro .sub{font-size:14px;color:#b9c2d0;line-height:1.9;max-width:470px;margin:0 auto 25px}
+.rule{height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent);margin:18px 0}
+.primary{
+  border:1px solid #f1ca8d;color:#182331;background:linear-gradient(120deg,#f2d09a,#c89150);
+  border-radius:7px;padding:13px 28px;font-weight:900;letter-spacing:2px;cursor:pointer;
+  box-shadow:0 5px 18px rgba(208,157,91,.18);transition:.2s;
+}
+.primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.secondary{border:1px solid rgba(218,181,127,.55);background:transparent;color:var(--gold2);border-radius:7px;padding:10px 18px;cursor:pointer}
+.small-note{color:#7f8ca0;font-size:11px;line-height:1.7;margin:18px auto 0}
+.feature-row{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin:18px 0}
+.feature{font-size:11px;border:1px solid rgba(72,222,216,.25);color:#a6d9d7;border-radius:20px;padding:6px 10px;background:rgba(72,222,216,.06)}
+.quiz-head{display:flex;justify-content:space-between;align-items:center;margin:4px 2px 12px;color:#aab5c5;font-size:12px}
+.progress{height:5px;background:#263344;border-radius:8px;overflow:hidden;margin-bottom:17px}
+.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,#39bdb9,#e8bd7b);transition:width .25s}
+.question-panel{padding:23px 19px 20px}
+.q-tag{color:var(--cyan);font-size:11px;letter-spacing:2px;margin-bottom:13px}
+.question-title{font-size:clamp(19px,5vw,25px);line-height:1.55;color:#f3d6a8;margin-bottom:22px;font-weight:800}
+.answers{display:grid;gap:11px}
+.answer{
+  width:100%;text-align:left;display:flex;gap:12px;align-items:flex-start;
+  color:#e4e8ed;background:linear-gradient(110deg,rgba(32,48,66,.94),rgba(17,29,44,.94));
+  border:1px solid rgba(117,153,171,.3);border-radius:9px;padding:14px 13px;cursor:pointer;line-height:1.65;
+  transition:.18s;
+}
+.answer:hover{border-color:var(--cyan);background:rgba(34,75,82,.5);transform:translateX(2px)}
+.answer:active{transform:scale(.99)}
+.answer .letter{flex:0 0 25px;width:25px;height:25px;display:grid;place-items:center;border:1px solid rgba(229,184,117,.65);border-radius:50%;color:var(--gold2);font-size:12px;font-weight:800}
+.answer .answer-text{font-size:14px}
+.quiz-foot{display:flex;justify-content:space-between;align-items:center;margin-top:17px;gap:10px}
+.result-head{padding:20px 20px 17px;background:linear-gradient(115deg,rgba(8,16,27,.95),rgba(30,43,63,.8));}
+.result-topline{display:flex;justify-content:space-between;color:#8490a6;font-size:10px;letter-spacing:1.5px}
+.hero-row{display:flex;align-items:center;gap:17px;margin-top:17px}
+.avatar{
+  width:116px;height:116px;flex:0 0 116px;border-radius:50%;border:4px solid #d6aa70;
+  box-shadow:0 0 0 5px rgba(214,170,112,.16),0 0 25px rgba(65,210,205,.13);
+  background:radial-gradient(circle at 35% 28%,#52677b,#1b2a3e 58%,#101722);
+  display:grid;place-items:center;overflow:hidden;color:#f0d4a8;font-size:38px;font-weight:900;
+}
+.avatar img{width:100%;height:100%;object-fit:cover;display:none}
+.hero-info{min-width:0}
+.hero-name{font-size:clamp(30px,8vw,46px);font-weight:1000;color:#f3d7ac;letter-spacing:3px;margin:0 0 4px}
+.hero-sub{color:#d7b17d;font-size:15px;font-weight:800;margin-bottom:9px}
+.player-tag{display:inline-block;background:linear-gradient(90deg,#e5bd80,#b98146);color:#172231;padding:6px 12px;font-weight:900;border-radius:2px;font-size:13px}
+.hero-quote{color:#d8dce3;font-size:15px;font-weight:700;margin:12px 0 0;line-height:1.6}
+.section{margin-top:13px}
+.section-title{display:flex;align-items:center;gap:10px;color:var(--gold2);font-weight:900;font-size:20px;letter-spacing:1px;padding:0 0 10px;border-bottom:1px solid rgba(220,177,119,.35);margin-bottom:12px}
+.section-title .symbol{color:var(--gold);font-size:22px}
+.section-title .slashes{color:#8e704f;letter-spacing:4px;margin-left:5px}
+.radar-layout{display:grid;grid-template-columns:1.05fr .95fr;gap:10px;align-items:center}
+.radar-wrap{min-width:0}
+#radar{width:100%;height:auto;display:block;max-height:310px}
+.stats{display:grid;gap:11px;padding:10px 8px}
+.stat{display:grid;grid-template-columns:24px 1fr 30px;gap:7px;align-items:center}
+.stat-icon{font-size:17px;color:var(--gold)}
+.stat-main{min-width:0}
+.stat-label{font-size:11px;color:#e4e7ec;margin-bottom:5px}
+.bar{height:7px;border-radius:8px;background:#26323e;overflow:hidden}
+.bar span{display:block;height:100%;background:linear-gradient(90deg,#45d6d1,#36b9bc);border-radius:8px}
+.stat-num{text-align:right;color:#f1c98f;font-size:18px;font-weight:900}
+.analysis-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.analysis-card{padding:7px 9px 5px;min-width:0}
+.analysis-card + .analysis-card{border-left:1px solid rgba(83,183,187,.4);padding-left:16px}
+.analysis-title{font-size:15px;color:var(--cyan);font-weight:900;margin-bottom:8px}
+.analysis-title span{margin-right:5px}
+.analysis-text{font-size:12px;line-height:1.85;color:#c5cbd5;margin:0;overflow-wrap:anywhere}
+.verdict{padding:17px 17px 16px;text-align:center;border-color:rgba(229,184,117,.8);background:linear-gradient(120deg,rgba(22,31,44,.98),rgba(29,34,47,.96))}
+.verdict-label{font-size:17px;color:var(--gold2);font-weight:900;margin-bottom:12px}
+.verdict-main{font-family:"STKaiti","KaiTi","Microsoft YaHei",serif;font-size:clamp(20px,5.5vw,29px);font-weight:900;line-height:1.55;color:#f1cf9e}
+.verdict-sub{font-size:12px;color:#bfc5ce;margin:8px 0 0}
+.result-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:17px 0 5px}
+.footer{text-align:center;color:#66748a;font-size:10px;letter-spacing:1px;margin-top:18px}
+@media(max-width:520px){
+ .app{padding:10px 9px 22px}
+ .panel-inner{padding:16px 13px}
+ .intro{padding:27px 15px}
+ .hero-row{gap:13px}
+ .avatar{width:91px;height:91px;flex-basis:91px;font-size:30px}
+ .hero-quote{font-size:13px}
+ .radar-layout{grid-template-columns:1fr 1fr;gap:3px}
+ .stats{gap:9px;padding:5px 1px}
+ .stat{grid-template-columns:18px 1fr 25px;gap:4px}
+ .stat-icon{font-size:14px}
+ .stat-label{font-size:10px}
+ .stat-num{font-size:15px}
+ .bar{height:6px}
+ .section-title{font-size:17px}
+ .analysis-grid{gap:7px}
+ .analysis-card{padding:5px 5px}
+ .analysis-card + .analysis-card{padding-left:10px}
+ .analysis-title{font-size:13px}
+ .analysis-text{font-size:11px;line-height:1.75}
+}
+@media(max-width:360px){
+ .radar-layout{grid-template-columns:1fr}
+ #radar{max-height:260px}
+ .stats{grid-template-columns:1fr 1fr}
+ .analysis-grid{grid-template-columns:1fr}
+ .analysis-card + .analysis-card{border-left:0;border-top:1px solid rgba(83,183,187,.4);padding:12px 5px 4px}
+}
+
+/* ===== 工业金属质感增强 ===== */
+body{
+  background:
+    radial-gradient(ellipse at 50% -10%,rgba(210,166,101,.16),transparent 38%),
+    radial-gradient(ellipse at 82% 20%,rgba(64,93,125,.23),transparent 35%),
+    linear-gradient(135deg,#070d16 0%,#172334 46%,#090f19 100%);
+}
+.panel{
+  border:1px solid transparent;
+  background:
+    linear-gradient(145deg,rgba(20,31,46,.98),rgba(8,16,27,.98)) padding-box,
+    linear-gradient(135deg,#fff0c6 0%,#9b7040 13%,#f4d39b 27%,#6f5236 48%,#d8ae72 70%,#61472e 100%) border-box;
+  border-radius:12px;
+  box-shadow:0 14px 34px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,235,194,.13),inset 0 0 26px rgba(208,165,102,.055);
+}
+.panel:before{
+  inset:5px;border:1px solid rgba(226,185,124,.2);border-radius:8px;
+  background:linear-gradient(115deg,rgba(255,225,174,.025),transparent 30%,transparent 70%,rgba(255,225,174,.025));
+}
+.panel:after{
+  content:"";position:absolute;right:12px;top:12px;width:5px;height:5px;border-radius:50%;
+  background:#f1cc8c;box-shadow:0 0 7px rgba(241,204,140,.85),-9px 0 0 rgba(191,147,88,.55);
+  pointer-events:none;
+}
+.section-title{
+  text-shadow:0 0 15px rgba(224,178,111,.16);
+}
+.section-title:after{
+  content:"";height:2px;flex:1;margin-left:4px;
+  background:linear-gradient(90deg,rgba(224,178,111,.55),transparent);
+}
+.primary{
+  border:1px solid #fff0c6;
+  background:linear-gradient(180deg,#f8dfb0 0%,#d7a763 42%,#956333 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.65),inset 0 -2px 0 rgba(72,43,19,.35),0 5px 18px rgba(195,143,76,.25);
+}
+.secondary{
+  border:1px solid #a98759;
+  background:linear-gradient(180deg,rgba(60,53,43,.45),rgba(20,26,34,.7));
+  box-shadow:inset 0 1px 0 rgba(255,232,190,.12);
+}
+.answer{
+  border:1px solid rgba(184,146,91,.42);
+  background:linear-gradient(110deg,rgba(43,49,57,.96),rgba(15,26,39,.98));
+  box-shadow:inset 0 1px 0 rgba(255,225,174,.06),0 3px 9px rgba(0,0,0,.18);
+}
+.answer:hover{
+  border-color:#e4bd7e;background:linear-gradient(110deg,rgba(77,62,43,.72),rgba(25,44,55,.98));
+  box-shadow:inset 0 0 16px rgba(224,178,111,.08),0 0 13px rgba(224,178,111,.12);
+}
+.answer .letter{
+  border-color:#c99d60;color:#f6d8a7;
+  background:linear-gradient(145deg,rgba(225,184,119,.17),rgba(91,65,38,.18));
+}
+.progress{background:#242a32;border:1px solid rgba(213,174,116,.35);height:7px}
+.progress span{background:linear-gradient(90deg,#8c6338,#f7d99e 48%,#b47b3e);box-shadow:0 0 9px rgba(236,190,119,.5)}
+.avatar{
+  border:4px solid transparent;
+  background:linear-gradient(#1b2a3e,#1b2a3e) padding-box,linear-gradient(135deg,#fff0c6,#9b7040,#f4d39b,#6f5236,#e7bd7c) border-box;
+  box-shadow:0 0 0 4px rgba(214,170,112,.13),0 0 26px rgba(224,178,111,.2);
+}
+.player-tag{
+  background:linear-gradient(180deg,#f8dfb0,#d7a763 55%,#a36e39);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 2px 8px rgba(0,0,0,.25);
+}
+.verdict{
+  background:
+    linear-gradient(145deg,rgba(34,31,29,.98),rgba(10,18,29,.98)) padding-box,
+    linear-gradient(120deg,#f4d39b,#8c6338,#e8bd7d,#60452d) border-box;
+}
+.verdict-label{color:#f2cd91;text-shadow:0 0 12px rgba(226,178,105,.22)}
+.stat-num{color:#f2cd91;text-shadow:0 0 10px rgba(226,178,105,.14)}
+.bar{background:linear-gradient(180deg,#30343a,#171f29);border:1px solid rgba(201,160,99,.18)}
+.bar span{background:linear-gradient(90deg,#987044,#e9c27e 48%,#b9874d);box-shadow:0 0 8px rgba(226,178,105,.25)}
+/* 启动与结果揭晓加载层 */
+.loading-overlay{
+  position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+  padding:22px;background:rgba(4,9,16,.96);backdrop-filter:blur(9px);
+  opacity:1;visibility:visible;transition:opacity .45s ease,visibility .45s ease;
+}
+.loading-overlay.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.loading-box{
+  width:min(100%,390px);text-align:center;position:relative;padding:35px 24px 29px;
+  border:1px solid transparent;border-radius:13px;
+  background:linear-gradient(145deg,#111e2e,#090f19) padding-box,
+    linear-gradient(135deg,#fff0c6,#8c6338,#f1d19a,#5f462e) border-box;
+  box-shadow:0 0 45px rgba(197,148,79,.13),inset 0 0 30px rgba(215,174,111,.06);
+  overflow:hidden;
+}
+.loading-box:before,.loading-box:after{
+  content:"";position:absolute;width:35px;height:35px;border-color:#d6ad72;border-style:solid;opacity:.8;
+}
+.loading-box:before{left:9px;top:9px;border-width:1px 0 0 1px}
+.loading-box:after{right:9px;bottom:9px;border-width:0 1px 1px 0}
+.loading-kicker{font-size:10px;letter-spacing:3px;color:#a58b68;margin-bottom:17px}
+.loading-emblem{
+  width:112px;height:112px;margin:0 auto 20px;position:relative;display:grid;place-items:center;
+  border:1px solid rgba(224,181,116,.65);border-radius:50%;
+  background:radial-gradient(circle,#3b3328 0%,#172333 54%,#0a111c 72%);
+  box-shadow:0 0 25px rgba(221,174,105,.14),inset 0 0 18px rgba(232,193,131,.13);
+}
+.loading-emblem:before,.loading-emblem:after{
+  content:"";position:absolute;border-radius:50%;border:2px solid transparent;
+}
+.loading-emblem:before{
+  inset:-9px;border-top-color:#f1d29c;border-right-color:#9b7549;
+  animation:gearSpin 2.8s linear infinite;
+}
+.loading-emblem:after{
+  inset:7px;border-bottom-color:#8b6842;border-left-color:#e8c58d;
+  animation:gearSpin 2s linear infinite reverse;
+}
+.loading-core{font-size:42px;color:#f2d19a;text-shadow:0 0 18px rgba(242,209,154,.5);animation:corePulse 1.3s ease-in-out infinite}
+@keyframes gearSpin{to{transform:rotate(360deg)}}
+@keyframes corePulse{50%{transform:scale(1.12);filter:brightness(1.35)}}
+.loading-title{font-size:19px;font-weight:900;letter-spacing:3px;color:#f0d2a0;margin-bottom:8px}
+.loading-desc{font-size:11px;color:#929eae;letter-spacing:1px;min-height:18px}
+.loading-track{height:5px;margin:22px 0 10px;background:#252b32;border:1px solid rgba(209,168,108,.35);overflow:hidden}
+.loading-track span{display:block;width:0;height:100%;background:linear-gradient(90deg,#8b6036,#f5d99f,#b47c40);box-shadow:0 0 12px rgba(245,217,159,.6);transition:width .3s ease}
+.loading-percent{font-size:11px;color:#d8b77f;text-align:right;font-variant-numeric:tabular-nums}
+.loading-status{font-size:9px;color:#68778b;letter-spacing:2px;margin-top:18px}
+@media(prefers-reduced-motion:reduce){
+  *,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topline"><span class="brand">召唤师人格鉴定所</span><span>SUMMONER PERSONALITY REPORT</span></div>
+
+  <section id="introScreen" class="screen active">
+    <div class="panel">
+      <div class="panel-inner intro">
+        <div class="kicker">LEAGUE OF LEGENDS · PERSONALITY LAB</div>
+        <div class="crest">✦</div>
+        <h1>你是峡谷里的哪位？</h1>
+        <p class="sub">25道灵魂拷问题，测出你隐藏的峡谷人格。<br>不测段位，不看战绩，只看你到底有多离谱。</p>
+        <div class="feature-row">
+          <span class="feature">14种峡谷人格</span>
+          <span class="feature">25道游戏场景题</span>
+          <span class="feature">拒绝标准答案</span>
+        </div>
+        <div class="rule"></div>
+        <button class="primary" onclick="startQuiz()">开始鉴定 →</button>
+        <p class="small-note">请凭第一反应作答。不要思考，不要狡辩。<br>本测试仅供娱乐，峡谷名誉不承担任何责任。</p>
+      </div>
+    </div>
+    <div class="footer">NO RANK · NO EXCUSES · JUST YOUR TRUE SELF</div>
+  </section>
+
+  <section id="quizScreen" class="screen">
+    <div class="quiz-head"><span id="questionCount">QUESTION 01 / 25</span><span id="progressText">4%</span></div>
+    <div class="progress"><span id="progressBar"></span></div>
+    <div class="panel question-panel">
+      <div class="q-tag">峡谷行为观察 · 请诚实作答</div>
+      <h2 class="question-title" id="questionTitle"></h2>
+      <div class="answers" id="answerList"></div>
+      <div class="quiz-foot">
+        <span class="small-note" style="margin:0">选完自动进入下一题</span>
+        <button class="secondary" onclick="backToIntro()">退出测试</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="resultScreen" class="screen">
+    <div class="panel">
+      <div class="result-head">
+        <div class="result-topline"><span>WORLDS · SUMMONER FILE</span><span>PERSONALITY REPORT</span></div>
+        <div class="hero-row">
+          <div class="avatar" id="heroAvatar">
+            <img id="heroImage" alt="英雄头像">
+            <span id="avatarFallback">李</span>
+          </div>
+          <div class="hero-info">
+            <h1 class="hero-name" id="heroName">盲僧</h1>
+            <div class="hero-sub" id="heroSub">李青</div>
+            <div class="player-tag" id="playerName">职业选手：Oner</div>
+            <p class="hero-quote" id="heroQuote"></p>
+          </div>
+        </div>
+      </div>
+      <div class="panel-inner">
+        <div class="section">
+          <div class="section-title"><span class="symbol">♜</span>五维人格鉴定 <span class="slashes">///</span></div>
+          <div class="radar-layout">
+            <div class="radar-wrap"><canvas id="radar" width="420" height="360"></canvas></div>
+            <div class="stats" id="statsList"></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title"><span class="symbol">♜</span>英雄人格分析 <span class="slashes">///</span></div>
+          <div class="analysis-grid">
+            <div class="analysis-card">
+              <div class="analysis-title"><span>◈</span>人格画像</div>
+              <p class="analysis-text" id="personalityText"></p>
+            </div>
+            <div class="analysis-card">
+              <div class="analysis-title"><span>♟</span>玩家画像</div>
+              <p class="analysis-text" id="playerText"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel verdict section">
+      <div class="verdict-label">⚠ 实验室最终判定</div>
+      <div class="verdict-main" id="verdictMain"></div>
+      <p class="verdict-sub" id="verdictSub"></p>
+    </div>
+    <div class="result-actions">
+      <button class="primary" onclick="restartQuiz()">再测一次</button>
+      <button class="secondary" onclick="shareResult()">复制结果文案</button>
+    </div>
+    <div class="footer">SUMMONER PERSONALITY REPORT · NO. 001</div>
+  </section>
+</div>
+
+
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="loading-box">
+    <div class="loading-kicker">ARCANE INDUSTRIAL SYSTEM · ONLINE</div>
+    <div class="loading-emblem"><div class="loading-core">✦</div></div>
+    <div class="loading-title" id="loadingTitle">系统正在启动</div>
+    <div class="loading-desc" id="loadingDesc">正在唤醒海克斯核心……</div>
+    <div class="loading-track"><span id="loadingBar"></span></div>
+    <div class="loading-percent" id="loadingPercent">00%</div>
+    <div class="loading-status" id="loadingStatus">POWER · CORE · LINK · READY</div>
+  </div>
+</div>
+
+<script>
+/* =========================
+   人物资料：头像路径可在这里替换
+   例如 portrait: "./images/盲僧.jpg"
+   暂时留空时显示圆形文字占位头像
+========================= */
+const PEOPLE = {
+  lee:{
+    name:"盲僧",realName:"李青",player:"Oner",portrait:"./images/盲僧.jpg",
+    quote:"“我的眼里只有操作，至于踢不踢得到，那是另一个问题。”",
+    scores:[100,95,78,96,65],
+    personality:"极度相信操作，人生没有撤退键，只有摸眼、回旋踢、闪现，以及事后复盘“刚刚没踢好”。不怕失败，怕操作没人看见。",
+    playerText:"喜欢秀操作，即使最后秀的是死亡回放；团战前预演回旋踢，坚信自己只差一个完美角度。",
+    verdict:"你不是来赢的，你是来给峡谷拍操作集锦的。",
+    sub:"这就是你，峡谷人体描边大师！"
+  },
+  ez:{
+    name:"伊泽瑞尔",realName:"EZ",player:"Ruler",portrait:"./images/伊泽瑞尔.jpg",
+    quote:"“帅是一辈子的事，输出只是顺便。”",
+    scores:[92,45,83,80,96],
+    personality:"注重个人形象与输出环境。别人看胜负，EZ看站位、姿势、技能特效和安全距离。只要没人碰到自己，一切都好商量。",
+    playerText:"喜欢远程消耗、安全距离输出，能Q绝不A，能E绝不走路；不能接受对面辅助摸到自己。",
+    verdict:"你不是在打团，你是在保持社交距离。",
+    sub:"峡谷优雅型打工人，输出可以迟到，帅不能缺席。"
+  },
+  jarvan:{
+    name:"嘉文四世",realName:"皇子",player:"Canyon",portrait:"./images/嘉文四世.jpg",
+    quote:"“德玛西亚！都给我进来开会！”",
+    scores:[85,98,100,88,80],
+    personality:"天生领导者，喜欢掌控局面、主动承担责任。总觉得队友能跟上，自己EQ进场时，队友可能还在河道刷螃蟹。",
+    playerText:"喜欢主动开团、替队友决定行动。最常说“我能开”，然后一个人冲进五个人中间。",
+    verdict:"你把团战当会议室，把队友当参会人员。",
+    sub:"峡谷拆迁办主任，开团之前请确认队友已签到。"
+  },
+  rumble:{
+    name:"兰博",realName:"机械公敌",player:"Kiin",portrait:"./images/兰博.jpg",
+    quote:"“我没生气，我只是想让整个峡谷升温。”",
+    scores:[87,100,85,99,32],
+    personality:"情绪直接，开心烧别人，不开心烧得更狠。火焰已经说明一切，温度就是他的情绪表达方式。",
+    playerText:"喜欢制造混乱、情绪升温，对大招有不切实际的期待。看到敌人扎堆，血压和快乐一起升高。",
+    verdict:"你不是脾气不好，你只是自带区域供暖系统。",
+    sub:"移动式情绪爆炸装置，建议少生气，多控温。"
+  },
+  alistar:{
+    name:"阿利斯塔",realName:"牛头",player:"Meiko",portrait:"./images/阿利斯塔.jpg",
+    quote:"“你尽管输出，剩下的交给我——包括你的死亡。”",
+    scores:[75,88,100,82,98],
+    personality:"可靠、热心，习惯冲进去保护队友，哪怕队友根本不知道自己需要保护。看到危险，第一反应是顶上去。",
+    playerText:"团队保护伞，喜欢行动。看到敌人想顶，看到墙也想顶，有时候看到队友也想顶。",
+    verdict:"你以为自己在保护队友，队友以为你在拆迁。",
+    sub:"峡谷人形拆迁车，脑子里可能只有WQ。"
+  },
+  syndra:{
+    name:"辛德拉",realName:"暗黑元首",player:"Knight",portrait:"./images/辛德拉.jpg",
+    quote:"“我不需要解释，伤害就是我的发言稿。”",
+    scores:[99,70,75,76,90],
+    personality:"自信、高贵、习惯掌控局面，认为自己应该站在舞台中央，其他人都是背景板。沟通方式是一个球解决问题。",
+    playerText:"喜欢控制局面、自尊心强、远程解决问题。能用技能说明的事情，绝不浪费口舌。",
+    verdict:"你不是高冷，你只是觉得交流会降低段位。",
+    sub:"峡谷高贵冷艳审判官，扔出去的是球，不是优越感。"
+  },
+  orianna:{
+    name:"奥莉安娜",realName:"发条",player:"Chovy",portrait:"./images/奥莉安娜.jpg",
+    quote:"“一切尽在计算之中，除了队友的脑回路。”",
+    scores:[96,18,98,60,100],
+    personality:"理性、计算、规划，不喜欢意外。每一步都要考虑收益、风险和后续安排，最好连队友的走位也能提前预测。",
+    playerText:"稳定发育、规划资源、计算收益、控制变量。团战前脑内已经模拟了三套方案。",
+    verdict:"你不是在玩游戏，你是在运行一份实时Excel。",
+    sub:"峡谷精密计算型机器人，唯独没算到队友突然闪现进场。"
+  },
+  jax:{
+    name:"贾克斯",realName:"武器大师",player:"Bin",portrait:"./images/贾克斯.jpg",
+    quote:"“一个能打的都没有？那我就再找一个。”",
+    scores:[100,95,55,93,85],
+    personality:"觉得世界上的问题都可以用单挑解决。别人抱团，他单带；别人支援，他拆塔；别人回城，他还想再打一架。",
+    playerText:"喜欢证明自己强，喜欢单挑。团战可以不参加，但单挑不能输，输一波能记一整局。",
+    verdict:"你把召唤师峡谷玩成了个人格斗擂台。",
+    sub:"单挑狂魔兼路灯管理员，建议偶尔看一眼小地图。"
+  },
+  ambessa:{
+    name:"安蓓萨",realName:"铁血女战士",player:"Zeus",portrait:"./images/安蓓萨.jpg",
+    quote:"“我不接受失败，只接受下一次进攻。”",
+    scores:[98,93,80,87,94],
+    personality:"强势、主动、胜负欲极强，不喜欢等待机会，而是直接创造机会。只要还有技能，就觉得自己还能再打一轮。",
+    playerText:"主动出击、胜负欲强，觉得操作能解决一切。最不能忍受的不是被击杀，而是没打出操作。",
+    verdict:"别人还在开会讨论，你已经把对面开除。",
+    sub:"峡谷铁血女总裁，偶尔连队友也一起开除。"
+  },
+  qiyana:{
+    name:"奇亚娜",realName:"元素女皇",player:"Rookie",portrait:"./images/奇亚娜.jpg",
+    quote:"“整个峡谷都应该知道，谁才是主角。”",
+    scores:[100,90,75,98,60],
+    personality:"个性强，不接受平庸，需要舞台和观众。一次完美操作足以让她忘记之前所有失误，人生必须有高光时刻。",
+    playerText:"喜欢刺客和爆发，注重操作观赏性。一次完美大招可以原谅此前十分钟的黑白屏幕。",
+    verdict:"你不是在玩游戏，你是在拍个人纪录片。",
+    sub:"峡谷珠宝级大小姐，集锦梦与黑白屏现实并存。"
+  },
+  jhin:{
+    name:"烬",realName:"戏命师",player:"Gumayusi",portrait:"./images/烬.jpg",
+    quote:"“四是艺术，五杀只是世俗的评价。”",
+    scores:[96,55,88,90,91],
+    personality:"追求完美和仪式感。别人追求五杀，他追求第四枪的落点；别人看伤害，他看艺术构图。",
+    playerText:"注重仪式感、质量和远程狙击。喜欢把每一次输出都安排得明明白白，最好连击杀也有节奏。",
+    verdict:"你不是来赢比赛的，你是来举办个人艺术展的。",
+    sub:"峡谷艺术型强迫症患者，可惜对面不会站着等你摆造型。"
+  },
+  lulu:{
+    name:"露露",realName:"仙灵女巫",player:"Keria",portrait:"./images/露露.jpg",
+    quote:"“别担心，我能把所有人都变得可可爱爱。”",
+    scores:[82,38,100,100,95],
+    personality:"童心、古灵精怪，表面善良可爱，实际上很擅长让对面怀疑人生。别人看到敌人，她看到可以变成小动物的潜在客户。",
+    playerText:"喜欢保护队友、搞怪和控制敌人。可以温柔地给队友套盾，也可以微笑着把刺客变成小动物。",
+    verdict:"你的善良是真的，你的腹黑也是真的。",
+    sub:"峡谷魔法幼儿园园长，今日营业项目：变羊。"
+  },
+  crab:{
+    name:"河道迅捷蟹",realName:"河蟹",player:"？？？",portrait:"./images/河道迅捷蟹.jpg",
+    quote:"“我只是路过，你们为什么要打我？”",
+    scores:[15,5,100,100,100],
+    personality:"和平主义，梦想只是沿着河道散步。可只要一出现，就能让两个打野为了你争得头破血流。关键时刻战略性撤退。",
+    playerText:"不喜欢冲突却总在冲突中心，喜欢观察打架、提供视野。别人越抓越跑，主打一个活着就是胜利。",
+    verdict:"你不需要击杀助攻，只要活着，就有人为你交闪现。",
+    sub:"峡谷真正的和平主义者，最高成就是让两个职业打野交光技能。"
+  },
+  baron:{
+    name:"纳什男爵",realName:"大龙",player:"？？？",portrait:"./images/纳什男爵.jpg",
+    quote:"“五个人一起上？很好，今天的外卖终于齐了。”",
+    scores:[100,100,100,100,100],
+    personality:"食物链顶端，不移动、不支援、不买装备，只待在自己的房间里，就有五个人主动上门。最擅长让对手以为赢了，然后翻车。",
+    playerText:"喜欢当中心、享受众星捧月、制造事故。最享受的时刻不是被击杀，而是让对面五个人一起倒下。",
+    verdict:"你不是峡谷玩家，你是峡谷最终房东。",
+    sub:"五个人来打你，最后经常五个人躺在你房间。"
+  }
+};
+
+/* =========================
+   题库：每个选项的 id 对应上方 PEOPLE 的键
+========================= */
+const QUESTIONS = [
+{q:"你补兵时漏掉一个炮车，你的反应是？",a:[
+["没事，下一波我一定补回来……这波不算。","crab"],
+["这也能漏？我今天必须证明自己。","jax"],
+["先把兵线处理好，别因为一个炮车影响节奏。","lulu"],
+["不说话，默默记下这个仇，等会儿找人单挑。","baron"]]},
+{q:"对线时，你被对面单杀了，你会？",a:[
+["下一波直接打回来，我不接受这个结果。","lee"],
+["问题不大，等我装备起来。","jhin"],
+["打野呢？这个时候不来抓，什么时候来？","jarvan"],
+["越想越气，下一波我要把他烧成烤肉。","rumble"]]},
+{q:"打野从你身边路过，却没有帮你抓人，你会？",a:[
+["他可能有自己的节奏，我继续发育。","ez"],
+["算了，我自己来，机会总要自己创造。","ambessa"],
+["没抓到就算了，我继续补兵。","ez"],
+["我只是河道的路人，为什么又没人来保护我？","crab"]]},
+{q:"队友抢了你的五杀，你会？",a:[
+["没关系，能赢就行，下次记得让我拿。","alistar"],
+["你们打你们的，我先去吃口大龙。","baron"],
+["他抢我的五杀？很好，记住他的ID。","qiyana"],
+["不用解释，下一波团战我来收拾残局。","syndra"]]},
+{q:"团战马上开始，你发现自己还没买装备，你会？",a:[
+["先看看能不能找个角度踢进去。","lee"],
+["先把装备补齐，输出环境比什么都重要。","ez"],
+["直接开团！装备的事情打完再说。","jarvan"],
+["不买了，反正我进去就能烧一片。","rumble"]]},
+{q:"队友在你面前被追杀，你会？",a:[
+["先判断一下能不能救，不能救就保住自己。","orianna"],
+["冲过去，能救一个是一个！","alistar"],
+["你们先跑，我来断后……等等，我怎么被包围了？","jhin"],
+["先把追杀的人解决，谁追我队友我就打谁。","orianna"]]},
+{q:"你发现对面残血逃跑了，你会？",a:[
+["计算技能距离和伤害，确保这一击必中。","syndra"],
+["直接闪现过去，不给他任何机会。","ambessa"],
+["先把自己保护好，残血不一定值得追。","lulu"],
+["一个漂亮的操作，必须配得上一个漂亮的击杀。","qiyana"]]},
+{q:"你在草丛蹲了半天，结果一个人都没来，你会？",a:[
+["继续蹲，我相信总有人会经过。","crab"],
+["换个地方，重新规划路线。","crab"],
+["不等了，直接去线上制造事故。","ambessa"],
+["我等了这么久，今天必须有人付出代价。","rumble"]]},
+{q:"队友一直喊你集合打团，但你正在单带，你会？",a:[
+["再给我十秒，这座塔马上就没了。","jax"],
+["先看局势，不能因为队友喊就乱打。","alistar"],
+["我来开！你们跟上就行！","jarvan"],
+["我有自己的节奏，团战不一定需要我。","ez"]]},
+{q:"你发现对面打野正在打河蟹，你会？",a:[
+["过去看看，能抢就抢，不能抢就跑。","lulu"],
+["这只河蟹我势在必得！","jarvan"],
+["先观察对面位置，再决定要不要动手。","lee"],
+["直接上去打，河蟹和面子我都要。","qiyana"]]},
+{q:"队友突然发出一条“666”，你觉得他是什么意思？",a:[
+["他在夸我，我值得拥有。","syndra"],
+["他可能在阴阳我，但我不在乎。","orianna"],
+["他是不是想让我帮他？我先看看。","jhin"],
+["谁在阴阳怪气？出来单挑。","baron"]]},
+{q:"辅助一直跟着你，你是什么感觉？",a:[
+["很好，有人保护我，我可以安心输出。","ez"],
+["终于有人懂我了，今天必须带他赢。","alistar"],
+["你别跟着我，我有自己的操作空间。","syndra"],
+["来都来了，一起冲！","crab"]]},
+{q:"队友开团开得特别突然，你会？",a:[
+["直接跟上，哪怕不知道他为什么开。","lee"],
+["先判断局势，确认能打再进场。","ambessa"],
+["立刻调整站位，找最佳输出角度。","orianna"],
+["他都开了，我不去岂不是不给面子？","baron"]]},
+{q:"队友说“这把稳了”，你会？",a:[
+["别急，先把大龙拿了再说。","lulu"],
+["我已经开始想象胜利画面了。","jax"],
+["越说稳，我越觉得要出事。","baron"],
+["别废话，继续压制对面。","jhin"]]},
+{q:"你们五个人准备打大龙，结果队友突然去追残血，你会？",a:[
+["算了，我自己把大龙拉住。","rumble"],
+["先把队伍重新组织起来，别乱追。","syndra"],
+["跟着队友一起追，能拿一个是一个。","jax"],
+["我就知道你们会来，今天又要挨打了。","baron"]]},
+{q:"队友在泉水挂机，你会？",a:[
+["问问他是不是掉线了。","lulu"],
+["不管了，我一个人也能创造奇迹。","qiyana"],
+["直接开麦，今天必须把事情说清楚。","rumble"],
+["少一个人也能打，先稳住局势。","jarvan"]]},
+{q:"你最不能接受队友哪种行为？",a:[
+["明明能赢，却非要秀操作。","orianna"],
+["抢我人头，还说自己输出最高。","lee"],
+["关键团战不来，结束后却开始指挥。","alistar"],
+["偷偷把我辛苦打的河蟹吃了。","crab"]]},
+{q:"你的大招空了，你会？",a:[
+["当作没发生，继续保持优雅。","ez"],
+["立刻找机会再放一次，我不信邪。","ambessa"],
+["这不是空大，是给对面制造心理压力。","jhin"],
+["谁看见了？刚才那一下不算。","qiyana"]]},
+{q:"你玩游戏最喜欢什么感觉？",a:[
+["一脚踢回五个人，瞬间改变战局。","lee"],
+["把对面打得毫无还手之力。","syndra"],
+["稳定发育，最后用数据证明自己。","orianna"],
+["一个人带穿一路，让对面顾此失彼。","jax"]]},
+{q:"你拿到优势以后，通常会？",a:[
+["继续压制，绝不给对面喘气的机会。","rumble"],
+["控制资源，扩大团队优势。","alistar"],
+["越打越自信，甚至开始挑战极限操作。","qiyana"],
+["先保证自己不死，优势慢慢扩大。","ez"]]},
+{q:"你在游戏里最常说的一句话是？",a:[
+["“我能操作！”","ambessa"],
+["“等我一下，我马上到！”","jarvan"],
+["“这波不怪我。”","jhin"],
+["“别打我，我只是路过！”","crab"]]},
+{q:"你看到对面五个人抱团，你的第一反应是？",a:[
+["正好，一起解决，省得一个个找。","jax"],
+["先观察阵型，找一个完美的进场角度。","syndra"],
+["保护队友，等他们先露出破绽。","lulu"],
+["五个人？今天的晚餐还挺丰盛。","baron"]]},
+{q:"如果游戏里可以删除一个东西，你最想删除？",a:[
+["对面残血逃跑时的闪现。","lee"],
+["队友突然发起的投降投票。","alistar"],
+["自己关键时刻的手滑。","orianna"],
+["对面那个一直针对我的人。","rumble"]]},
+{q:"如果你成为职业选手，你最希望观众记住你什么？",a:[
+["极限操作，名场面制造机。","qiyana"],
+["稳定可靠，关键时刻绝不掉链子。","jhin"],
+["团队发动机，哪里需要我就去哪里。","jarvan"],
+["我不需要观众，我只需要对面基地爆炸。","ambessa"]]},
+{q:"如果这一局游戏只能留下一个东西，你会选择？",a:[
+["一个能看清全图的视野。","crab"],
+["一次完美的五杀。","jax"],
+["一场让所有人记住我的团战。","baron"],
+["一个永远不会背叛我的队友。","lulu"]]}
+];
+
+const DIMENSIONS=["操作自信度","上头指数","团队贡献度","整活能力","抗压能力"];
+const DIM_ICONS=["⚔","♨","♟","☻","⬡"];
+const LETTERS=["A","B","C","D"];
+let currentQuestion=0;
+let score={};
+let selectedAnswers=[];
+let currentResult=null;
+
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function resetScores(){
+  score={};
+  Object.keys(PEOPLE).forEach(id=>score[id]=0);
+  selectedAnswers=[];
+  currentQuestion=0;
+}
+function startQuiz(){
+  resetScores();
+  showScreen("quizScreen");
+  renderQuestion();
+}
+function backToIntro(){
+  if(confirm("确定退出本次测试吗？当前答题进度将不会保存。")) showScreen("introScreen");
+}
+function renderQuestion(){
+  const q=QUESTIONS[currentQuestion];
+  const num=currentQuestion+1;
+  document.getElementById("questionCount").textContent=`QUESTION ${String(num).padStart(2,"0")} / ${QUESTIONS.length}`;
+  document.getElementById("progressText").textContent=Math.round(num/QUESTIONS.length*100)+"%";
+  document.getElementById("progressBar").style.width=(num/QUESTIONS.length*100)+"%";
+  document.getElementById("questionTitle").textContent=q.q;
+  const list=document.getElementById("answerList");
+  list.innerHTML="";
+  q.a.forEach((item,index)=>{
+    const btn=document.createElement("button");
+    btn.className="answer";
+    btn.innerHTML=`<span class="letter">${LETTERS[index]}</span><span class="answer-text"></span>`;
+    btn.querySelector(".answer-text").textContent=item[0];
+    btn.addEventListener("click",()=>selectAnswer(index));
+    list.appendChild(btn);
+  });
+}
+function selectAnswer(index){
+  if(selectedAnswers[currentQuestion]!==undefined)return;
+  const personId=QUESTIONS[currentQuestion].a[index][1];
+  score[personId]++;
+  selectedAnswers[currentQuestion]=index;
+  const buttons=document.querySelectorAll(".answer");
+  buttons[index].style.borderColor="var(--cyan)";
+  buttons[index].style.background="rgba(39,111,111,.45)";
+  buttons[index].querySelector(".letter").style.background="rgba(72,222,216,.2)";
+  setTimeout(()=>{
+    currentQuestion++;
+    if(currentQuestion<QUESTIONS.length)renderQuestion();
+    else showResult();
+  },230);
+}
+function showResult(){
+  runLoading(
+    "正在分析召唤师人格",
+    "正在比对25道回答与14种峡谷人格……",
+    2800,
+    ()=>{
+      const maxScore=Math.max(...Object.values(score));
+      const winners=Object.keys(score).filter(id=>score[id]===maxScore);
+      const winnerId=winners[Math.floor(Math.random()*winners.length)];
+      currentResult=PEOPLE[winnerId];
+      currentResult.id=winnerId;
+      renderResult(currentResult);
+      showScreen("resultScreen");
+    }
+  );
+}
+function renderResult(person){
+  document.getElementById("heroName").textContent=person.name;
+  document.getElementById("heroSub").textContent=person.realName;
+  document.getElementById("playerName").textContent="职业选手："+person.player;
+  document.getElementById("heroQuote").textContent=person.quote;
+  document.getElementById("personalityText").textContent=person.personality;
+  document.getElementById("playerText").textContent=person.playerText;
+  document.getElementById("verdictMain").textContent=person.verdict;
+  document.getElementById("verdictSub").textContent=person.sub;
+  const img=document.getElementById("heroImage");
+  const fallback=document.getElementById("avatarFallback");
+  if(person.portrait){
+    img.src=person.portrait;img.style.display="block";fallback.style.display="none";
+    img.onerror=()=>{img.style.display="none";fallback.style.display="block";};
+  }else{
+    img.removeAttribute("src");img.style.display="none";fallback.style.display="block";
+    fallback.textContent=person.name.slice(0,1);
+  }
+  const stats=document.getElementById("statsList");
+  stats.innerHTML="";
+  person.scores.forEach((value,i)=>{
+    const row=document.createElement("div");
+    row.className="stat";
+    row.innerHTML=`<span class="stat-icon">${DIM_ICONS[i]}</span><div class="stat-main"><div class="stat-label">${DIMENSIONS[i]}</div><div class="bar"><span style="width:${value}%"></span></div></div><span class="stat-num">${value}</span>`;
+    stats.appendChild(row);
+  });
+  drawRadar(person.scores);
+}
+function drawRadar(values){
+  const canvas=document.getElementById("radar");
+  const ctx=canvas.getContext("2d");
+  const w=canvas.width,h=canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const cx=w/2,cy=h/2+3,r=115;
+  const angles=Array.from({length:5},(_,i)=>-Math.PI/2+i*2*Math.PI/5);
+  ctx.lineWidth=1;
+  for(let level=1;level<=5;level++){
+    const rr=r*level/5;
+    ctx.beginPath();
+    angles.forEach((a,i)=>{
+      const x=cx+Math.cos(a)*rr,y=cy+Math.sin(a)*rr;
+      if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+    });
+    ctx.closePath();ctx.strokeStyle=level===5?"rgba(229,184,117,.9)":"rgba(128,160,174,.3)";ctx.stroke();
+  }
+  angles.forEach((a,i)=>{
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);
+    ctx.strokeStyle="rgba(229,184,117,.65)";ctx.stroke();
+  });
+  ctx.beginPath();
+  values.forEach((v,i)=>{
+    const rr=r*v/100,x=cx+Math.cos(angles[i])*rr,y=cy+Math.sin(angles[i])*rr;
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  });
+  ctx.closePath();ctx.fillStyle="rgba(53,210,203,.34)";ctx.strokeStyle="#4be3db";ctx.lineWidth=3;ctx.fill();ctx.stroke();
+  values.forEach((v,i)=>{
+    const x=cx+Math.cos(angles[i])*r*v/100,y=cy+Math.sin(angles[i])*r*v/100;
+    ctx.beginPath();ctx.arc(x,y,6,0,Math.PI*2);ctx.fillStyle="#f1c77e";ctx.fill();ctx.strokeStyle="#fff0c9";ctx.lineWidth=1.5;ctx.stroke();
+  });
+  ctx.textAlign="center";ctx.textBaseline="middle";ctx.font="bold 19px Microsoft YaHei";
+  const labels=[
+    {x:cx,y:cy-r-29,t:DIMENSIONS[0],v:values[0]},
+    {x:cx+r+40,y:cy-r*.28,t:DIMENSIONS[1],v:values[1]},
+    {x:cx+r*.68,y:cy+r*.9,t:DIMENSIONS[2],v:values[2]},
+    {x:cx-r*.68,y:cy+r*.9,t:DIMENSIONS[3],v:values[3]},
+    {x:cx-r-40,y:cy-r*.28,t:DIMENSIONS[4],v:values[4]}
+  ];
+  labels.forEach((item)=>{
+    ctx.fillStyle="#e5e9ef";ctx.font="16px Microsoft YaHei";ctx.fillText(item.t,item.x,item.y);
+    ctx.fillStyle="#f0c78f";ctx.font="bold 23px Arial";ctx.fillText(item.v,item.x,item.y+25);
+  });
+}
+function restartQuiz(){startQuiz();}
+function shareResult(){
+  if(!currentResult)return;
+  const text=`我在《英雄联盟·召唤师人格鉴定》中测出了：${currentResult.name}（${currentResult.realName}）！\n职业选手：${currentResult.player}\n${currentResult.verdict}\n${currentResult.sub}`;
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>alert("结果文案已复制！")).catch(()=>fallbackCopy(text));
+  }else fallbackCopy(text);
+}
+function fallbackCopy(text){
+  const area=document.createElement("textarea");area.value=text;document.body.appendChild(area);area.select();
+  try{document.execCommand("copy");alert("结果文案已复制！");}catch(e){alert(text);}
+  area.remove();
+}
+
+/* =========================
+   工业终端加载动画
+   页面首次打开：系统启动动画
+   答题结束：人格分析与结果揭晓动画
+========================= */
+function runLoading(title,desc,duration,onComplete){
+  const overlay=document.getElementById("loadingOverlay");
+  const titleEl=document.getElementById("loadingTitle");
+  const descEl=document.getElementById("loadingDesc");
+  const bar=document.getElementById("loadingBar");
+  const percent=document.getElementById("loadingPercent");
+  const status=document.getElementById("loadingStatus");
+  const steps=[
+    {at:0,text:"正在连接人格数据库……",status:"POWER · INITIALIZING",value:12},
+    {at:600,text:"正在读取召唤师行为数据……",status:"DATA · SCANNING",value:38},
+    {at:1200,text:"正在计算五维人格参数……",status:"ANALYSIS · RUNNING",value:67},
+    {at:1900,text:"正在生成专属英雄档案……",status:"PROFILE · BUILDING",value:88}
+  ];
+  titleEl.textContent=title;
+  descEl.textContent=desc;
+  bar.style.transition="none";
+  bar.style.width="0%";
+  percent.textContent="00%";
+  overlay.classList.remove("hidden");
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    bar.style.transition="width .45s ease";
+    bar.style.width="8%";
+    percent.textContent="08%";
+  }));
+  steps.forEach(step=>{
+    setTimeout(()=>{
+      if(overlay.classList.contains("hidden"))return;
+      descEl.textContent=step.text;
+      status.textContent=step.status;
+      bar.style.width=step.value+"%";
+      percent.textContent=String(step.value).padStart(2,"0")+"%";
+    },step.at);
+  });
+  setTimeout(()=>{
+    bar.style.width="100%";
+    percent.textContent="100%";
+    descEl.textContent=title.includes("启动")?"系统启动完成，欢迎进入召唤师实验室。":"人格匹配完成，正在揭晓最终结果。";
+    status.textContent="SYSTEM · ALL MODULES READY";
+    setTimeout(()=>{
+      overlay.classList.add("hidden");
+      if(typeof onComplete==="function")onComplete();
+    },260);
+  },duration);
+}
+
+/* 首次打开网页时播放启动动画 */
+window.addEventListener("load",()=>{
+  runLoading("召唤师实验室启动中","正在唤醒海克斯核心……",2200,()=>{});
+});
+
+/* 页面载入时检查题库数量，方便后续自行修改 */
+console.log("题目数量：",QUESTIONS.length,"；选项总数：",QUESTIONS.reduce((n,q)=>n+q.a.length,0));
+</script>
+</body>
+</html>
